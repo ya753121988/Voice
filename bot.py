@@ -12,11 +12,12 @@ from telegram.ext import (
     filters,
 )
 
+# ⚠️ আপনার বট টোকেনটি এখানে দিন অথবা Render-এর Environment Variable-এ সেট করুন
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN_HERE")
 
 # --- ১০ জন মেয়ে ও ১০ জন ছেলের ভয়েস লিস্ট ---
 VOICES = {
-    # Female Voices (Top 3 Bengali Voices included Bengali Fairy Tales Voice)
+    # Female Voices (Top Bengali Fairy Tales Voice সহ অন্যান্য ভয়েস)
     "f1": {"name": "👧 Nabanita (Bengali Fairy Tales Voice)", "voice": "bn-BD-NabanitaNeural"},
     "f2": {"name": "👧 Tanishaa (Bangla - India)", "voice": "bn-IN-TanishaaNeural"},
     "f3": {"name": "👩 Neerja (English - IN)", "voice": "en-IN-NeerjaNeural"},
@@ -41,10 +42,10 @@ VOICES = {
     "m10": {"name": "👨 James (English - PH)", "voice": "en-PH-JamesNeural"}
 }
 
-# DEFAULT VOICE (Defaulted to Bengali Fairy Tales Voice)
+# ডিফল্ট ভয়েস হিসেবে Fairy Tales এর ভয়েস সেট করা আছে
 DEFAULT_VOICE = "bn-BD-NabanitaNeural"
 
-# --- ডাটাবেজ সেটআপ (Data Persistence) ---
+# --- পার্মানেন্ট ডাটাবেজ সেটআপ (SQLite) ---
 def init_db():
     conn = sqlite3.connect("user_settings.db")
     cursor = conn.cursor()
@@ -96,7 +97,7 @@ async def voice_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     female_buttons = []
     for code, info in list(VOICES.items())[:10]:
         female_buttons.append(InlineKeyboardButton(info["name"], callback_data=f"set_{code}"))
-        if len(female_buttons) == 1: # ১ সারিতে ১টি করে বাটন দেখালে নাম সুন্দর দেখাবে
+        if len(female_buttons) == 1:
             keyboard.append(female_buttons)
             female_buttons = []
     if female_buttons:
@@ -179,7 +180,7 @@ def main():
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, convert_text_to_speech))
 
-    print("🤖 Bot started...")
+    print("🤖 Bot started successfully...")
     app.run_polling()
 
 if __name__ == "__main__":
