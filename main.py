@@ -4,6 +4,8 @@ import edge_tts
 import asyncio
 import json
 import os
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # আপনার বটের টোকেন দিন
 TOKEN = '8876597863:AAHyUfykCmx9B-URe_VEeFQNflBN3XT-4h0'
@@ -25,7 +27,7 @@ def save_data(data):
 # ১০ জন মেয়ে এবং ১০ জন ছেলের ভয়েস তালিকা
 VOICES = {
     "Female": {
-        "👧 Nabanita (Bengali-BD)": "bn-BD-NabanitaNeural",  # BengaliFairyTales Voice
+        "👧 Nabanita (Bengali-BD)": "bn-BD-NabanitaNeural",
         "👧 Tanishaa (Bengali-IN)": "bn-IN-TanishaaNeural",
         "👧 Swara (Hindi)": "hi-IN-SwaraNeural",
         "👧 Pallavi (Hindi)": "hi-IN-PallaviNeural",
@@ -128,5 +130,28 @@ def handle_text(message):
         if os.path.exists(filename):
             os.remove(filename)
 
-print("Bot is successfully running...")
-bot.polling(none_stop=True)
+# ==========================================
+# Render "No open ports" Error Fix Server
+# ==========================================
+class DummyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b"Telegram Bot is running successfully!")
+
+def run_dummy_server():
+    # Render সার্ভার পোর্ট অটোমেটিকালি দিয়ে দেয়, ডিফল্ট পোর্ট হিসেবে 10000 রাখছি।
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(('0.0.0.0', port), DummyHandler)
+    server.serve_forever()
+
+if __name__ == "__main__":
+    # ডামি ওয়েব সার্ভারকে ব্যাকগ্রাউন্ডে চালু করা হচ্ছে
+    server_thread = threading.Thread(target=run_dummy_server)
+    server_thread.daemon = True
+    server_thread.start()
+
+    # মেইন টেলিগ্রাম বট চালু করা হচ্ছে
+    print("Bot is successfully running...")
+    bot.polling(none_stop=True)
