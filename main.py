@@ -114,8 +114,11 @@ def handle_text(message):
     
     filename = f"audio_{user_id}.mp3"
     try:
-        # টেক্সট থেকে ভয়েস তৈরি
-        asyncio.run(generate_tts(message.text, user_voice, filename))
+        # টেক্সট থেকে ভয়েস তৈরি (এখানেই ফিক্স করা হয়েছে)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(generate_tts(message.text, user_voice, filename))
+        loop.close()
         
         # অডিও পাঠানো
         with open(filename, 'rb') as audio:
@@ -123,7 +126,7 @@ def handle_text(message):
             
         bot.delete_message(message.chat.id, msg.message_id)
     except Exception as e:
-        bot.edit_message_text("❌ অডিও তৈরি করতে সমস্যা হয়েছে। টেক্সটটি অন্যভাবে লিখে চেষ্টা করুন।", 
+        bot.edit_message_text(f"❌ অডিও তৈরি করতে সমস্যা হয়েছে। এরর: {e}", 
                               message.chat.id, msg.message_id)
     finally:
         # ফাইল স্টোরেজ ক্লিয়ার করা (যাতে সার্ভার ফুল না হয়)
